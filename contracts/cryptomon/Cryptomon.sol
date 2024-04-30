@@ -1,49 +1,44 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+    // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.4;
 
-import "./Item.sol";
+    import "./ICryptoAction.sol";
+    import "./CryptoStatAndItem.sol";
 
-contract Cryptomon {
+    contract Cryptomon {
 
-    struct BaseStats {
-        uint hp;
-        uint dmg;
-        uint def;
+        uint256 NFTID;
+        string NFTURI;
+        uint256 price;
+
+        ICryptoActions private actionStrategy;
+
+        BaseStats public baseStats;
+        LvlIncStats public lvlIncStats;
+        EvoIncStats public evoIncStats;
+        Item public item;
+
+        constructor(
+            uint256 _NFTID, string memory _NFTURI, uint256 _price,
+            BaseStats memory _baseStats,
+            LvlIncStats memory _lvlIncStats,
+            EvoIncStats memory _evoIncStats,
+            ICryptoActions  _actionStrategy
+        ) {
+            NFTID = _NFTID;
+            NFTURI = _NFTURI;
+            price = _price;
+            baseStats = _baseStats;
+            lvlIncStats = _lvlIncStats;
+            evoIncStats = _evoIncStats;
+            item = Item(0, 0, 0);
+            actionStrategy = _actionStrategy;
+        }
+
+        function addItem(Item memory _item) external {
+            item = _item;
+        }
+
+        function isDead() external view returns (bool) {
+            return baseStats.hp <= 0;
+        }
     }
-
-    struct LvlIncStats {
-        uint hp;
-        uint dmg;
-        uint def;
-    }
-
-    struct EvoIncStats {
-        uint hp;
-        uint dmg;
-        uint def;
-    }
-
-    BaseStats public baseStats;
-    LvlIncStats public lvlIncStats;
-    EvoIncStats public evoIncStats;
-    Item public item;
-
-    constructor(
-        uint baseHp, uint baseDmg, uint baseDef,
-        uint lvlIncHp, uint lvlIncDmg, uint lvlIncDef,
-        uint evoIncHp, uint evoIncDmg, uint evoIncDef
-    ) {
-        baseStats = BaseStats(baseHp, baseDmg, baseDef);
-        lvlIncStats = LvlIncStats(lvlIncHp, lvlIncDmg, lvlIncDef);
-        evoIncStats = EvoIncStats(evoIncHp, evoIncDmg, evoIncDef);
-        item = new Item(0, 0, 0);
-    }
-
-    function addItem(Item _item) external {
-        item = _item;
-    }
-
-    function isDead() external view returns (bool) {
-        return baseStats.hp <= 0;
-    }
-}
