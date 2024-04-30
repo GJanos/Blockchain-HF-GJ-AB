@@ -1,38 +1,60 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "./Cryptomon.sol";
+
 interface ICryptoActions {
-    function attack() external;
-    function defend() external;
-    function special() external;
+    function attack(Cryptomon cryto, Cryptomon otherCrypto) external;
+    function defend(Cryptomon cryto) external;
+    function special(Cryptomon cryto, Cryptomon otherCrypto) external;
 }
 
 // Contract representing normal actions a Cryptomon can take
 contract NormalActions is ICryptoActions {
-    function attack() external override {
-        // Normal attack logic
+    function attack(Cryptomon crypto, Cryptomon otherCrypto) external override {
+        uint256 defenderHp = otherCrypto.getCombatHp();
+        uint256 attackerDmg = crypto.getCombatDmg();
+        uint256 defenderDef = otherCrypto.getCombatDef();
+
+        otherCrypto.setCombatHp(defenderHp - (attackerDmg - defenderDef));
     }
 
-    function defend() external override {
-        // Normal defend logic
+    function defend(Cryptomon crypto) external override {
+        uint256 currentDef = crypto.getCombatDef();
+        crypto.setCombatDef(currentDef * 2);
     }
 
-    function special() external override {
-        // Normal special action logic
+    function special(Cryptomon crypto, Cryptomon otherCrypto) external override {
+        // If normal Crytomon does special attack, it just wasted a turn
     }
 }
 
 // Contract representing evolved actions a Cryptomon can take
 contract EvolvedActions is ICryptoActions {
-    function attack() external override {
-        // Evolved attack logic
+    function attack(Cryptomon crypto, Cryptomon otherCrypto) external override {
+        uint256 defenderHp = otherCrypto.getCombatHp();
+        uint256 attackerDmg = crypto.getCombatDmg();
+        uint256 defenderDef = otherCrypto.getCombatDef();
+
+        otherCrypto.setCombatHp(defenderHp - (attackerDmg + 1 - defenderDef));
     }
 
-    function defend() external override {
-        // Evolved defend logic
+    function defend(Cryptomon crypto) external override {
+        uint256 currentDef = crypto.getCombatDef();
+        crypto.setCombatDef(currentDef * 3);
     }
 
-    function special() external override {
-        // Evolved special action logic
+    function special(Cryptomon crypto, Cryptomon otherCrypto) external override {
+        // Self buff
+        crypto.setCombatHp(crypto.getCombatHp() + 1);
+        crypto.setCombatDmg(crypto.getCombatDmg() + 1);
+        crypto.setCombatDef(crypto.getCombatDef() + 1);
+
+        // Attack
+        uint256 defenderHp = otherCrypto.getCombatHp();
+        uint256 attackerDmg = crypto.getCombatDmg();
+        uint256 defenderDef = otherCrypto.getCombatDef();
+
+        otherCrypto.setCombatHp(defenderHp - (attackerDmg + 1 - defenderDef));
     }
 }
