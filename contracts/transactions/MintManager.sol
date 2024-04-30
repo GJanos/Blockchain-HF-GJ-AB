@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "hardhat/console.sol";
 
 import "../cryptomon/Cryptomon.sol";
 import "../cryptomon/ICryptoAction.sol";
@@ -21,75 +22,84 @@ contract MintManager is ERC721URIStorage {
     ];
 
     mapping (uint256 => address) public allMintedCryptomonAddresses;
-    uint public mintedNFTCnt = 0;
+    uint public storedNFTCnt = 0;
+    uint public totalSupply = NFTURIs.length;
 
     constructor() ERC721("CryptomonNFT", "CM") {
         mintAllNFTs();
-        require(mintedNFTCnt == NFTURIs.length,
+        require(storedNFTCnt == NFTURIs.length,
         "Not correct amount of Cryptomon NFTs minted");
     }
 
     function mintCryptomonNFT(
         uint256 price,
-        BaseStats memory _baseStats,
-        LvlIncStats memory _lvlIncStats,
-        EvoIncStats memory _evoIncStats
+        Stats memory _baseStats,
+        Stats memory _lvlIncStats,
+        Stats memory _evoIncStats
     ) private {
         require(newItemId <= NFTURIs.length,
         "URI index is out of bounds");
 
-        uint256 newItemIdUse = newItemId++;
-        _mint(address(this), newItemIdUse);
-        _setTokenURI(newItemIdUse, NFTURIs[newItemIdUse]);
+        uint256 NFTID = newItemId++;
+        _mint(address(this), NFTID);
+        _setTokenURI(NFTID, NFTURIs[NFTID]);
 
         Cryptomon newCryptomon = new Cryptomon(
-            newItemIdUse, NFTURIs[newItemIdUse],
+            NFTID, NFTURIs[NFTID],
             price,
             _baseStats,
             _lvlIncStats,
             _evoIncStats,
             new NormalActions()
         );
-        allMintedCryptomonAddresses[newItemIdUse] = address(newCryptomon);
-        mintedNFTCnt++;
+
+        allMintedCryptomonAddresses[NFTID] = address(newCryptomon);
+        storedNFTCnt++;
     }
 
     function mintAllNFTs() private {
         // Red Cryptomon
         mintCryptomonNFT(10,
-                        BaseStats(10, 3, 1),
-                        LvlIncStats(2, 1, 1),
-                        EvoIncStats(5, 3, 2));
+                        Stats(10, 3, 1),
+                        Stats(2, 1, 1),
+                        Stats(5, 3, 2));
 
         // White Cryptomon
         mintCryptomonNFT(9,
-                        BaseStats(8, 4, 1),
-                        LvlIncStats(1, 2, 1),
-                        EvoIncStats(4, 4, 1));
+                        Stats(8, 4, 1),
+                        Stats(1, 2, 1),
+                        Stats(4, 4, 1));
 
         // Black Cryptomon
         mintCryptomonNFT(15,
-                        BaseStats(12, 5, 2),
-                        LvlIncStats(3, 2, 1),
-                        EvoIncStats(10, 4, 2));
+                        Stats(12, 5, 2),
+                        Stats(3, 2, 1),
+                        Stats(10, 4, 2));
 
         // Blue Cryptomon
         mintCryptomonNFT(7,
-                        BaseStats(8, 2, 0),
-                        LvlIncStats(2, 1, 1),
-                        EvoIncStats(4, 3, 1));
+                        Stats(8, 2, 0),
+                        Stats(2, 1, 1),
+                        Stats(4, 3, 1));
 
         // Green Cryptomon
         mintCryptomonNFT(8,
-                        BaseStats(6, 2, 0),
-                        LvlIncStats(5, 4, 1),
-                        EvoIncStats(11, 7, 3));
+                        Stats(6, 2, 0),
+                        Stats(5, 4, 1),
+                        Stats(11, 7, 3));
     }
-
 
     function transferNFTto(address to, uint256 tokenId) public {
-        approve(to, tokenId);
-        transferFrom(to, address(this), tokenId);
+        // The contract itself is transferring, no need to approve since the contract is the owner and initiates the transfer
+        _transfer(address(this), to, tokenId);
         allMintedCryptomonAddresses[tokenId] = address(0);
+        storedNFTCnt--;
     }
+
+
+    function areNFTsAllSold() public view returns (bool) {
+        return storedNFTCnt == 0;
+    }
+
+    
 }
