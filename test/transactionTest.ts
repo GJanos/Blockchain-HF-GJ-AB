@@ -1,66 +1,89 @@
 const { expect } = require("chai");
-const {
-  loadFixture,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { ethers } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 describe("Transactions", function () {
 
-    async function deployTransactionManagerCrtFxt() {
+    const logSeparator = "\n---------------------\n---------------------\n"
+
+    async function deploytsxMgrCrtFxt() {
         const [deployer, buyer] = await ethers.getSigners();
-        const transactionManager = await ethers.deployContract("TransactionManager");
-        await transactionManager.waitForDeployment();
-        return { transactionManager, deployer, buyer };
+        const tsxMgr = await ethers.deployContract("TransactionManager");
+        await tsxMgr.waitForDeployment();
+        return { tsxMgr, deployer, buyer };
+    }
+
+    async function getmintMgrContract(address) {
+        const mintMgr = await ethers.getContractFactory("MintManager");
+        return mintMgr.attach(address);
     }
     
     it("Should lists all minted contracts", async function () {
-        const { transactionManager } = await deployTransactionManagerCrtFxt();
-        //await transactionManager.listCryptoNFTs();
+        const { tsxMgr } = await deploytsxMgrCrtFxt();
+        await tsxMgr.listCryptoNFTs();
     });
 
-    it("Should allow buyer to buy a CryptomonNFT", async function () {
-        const { transactionManager, deployer, buyer} = await deployTransactionManagerCrtFxt();
-        const mintManager = transactionManager.mintManager;
+    it("Should allow buyer to buy a CryptomonNFT. Owner changes. Balances change", async function () {
+        // get transactionManager and MintManager contracts
+        const { tsxMgr, _, buyer } = await deploytsxMgrCrtFxt();
+        const mintMgrAdr = await tsxMgr.mintManager();
+        const mintMgr = await getmintMgrContract(mintMgrAdr)
 
-        // Fetch initial NFT details
-        //const initialOwner = await mintManager.ownerOf(1);
-        //expect(initialOwner).to.equal(mintManager);
+        // initial owner is the minter
+        const strOwnerAdr = await mintMgr.ownerOf(1);
+        expect(strOwnerAdr).to.equal(mintMgr);
 
-         // Buyer buys the Cryptomon
-        const price = ethers.parseEther("9.0");
-
-        // Get initial Ether balances
-        const initialBuyerBalance = await ethers.provider.getBalance(buyer);
-        const initialManagerBalance = await ethers.provider.getBalance(transactionManager);
-
-        const tx = await transactionManager.connect(buyer).buyCrypto(1, { value: price });
+        // starter balances
+        const srtBuyerBal = BigInt((await ethers.provider.getBalance(buyer.address)).toString());
+        const srtSellerBal = BigInt((await ethers.provider.getBalance(tsxMgr)).toString());
+        
+        // making transaction
+        const buyersOfferPriceForNFT = ethers.parseEther("9.0"); // eth is just enough for purchase
+        const tx = await tsxMgr.connect(buyer).buyCrypto(1, { value: buyersOfferPriceForNFT });
         const receipt = await tx.wait();  // Wait for the transaction to be mined
 
-            // Calculate gas cost
-            const gasUsed = receipt.gasUsed;
-            const gasPrice = receipt.effectiveGasPrice;  // Directly obtain the effectiveGasPrice from the receipt
-            const gasCost = gasUsed.mul(gasPrice);
+        // end owner is the buyer
+        const endOwnerAdr = await mintMgr.ownerOf(1);
+        expect(endOwnerAdr).to.equal(buyer.address);
 
-            // Get final Ether balances
-            const finalBuyerBalance = await ethers.provider.getBalance(buyer.address);
-            const finalManagerBalance = await ethers.provider.getBalance(transactionManager.address);
+        // calculate used gas during transaction
+        const gasUsed = BigInt(receipt.gasUsed.toString());
+        const gasPrice = BigInt(receipt.gasPrice.toString());
+        const gasCost = gasUsed * gasPrice;
 
-            // Assertions
-            expect(finalBuyerBalance).to.equal(initialBuyerBalance.sub(price).sub(gasCost), "Buyer's balance should decrease by the price of the NFT plus gas costs");
-            expect(finalManagerBalance).to.equal(initialManagerBalance.add(price), "TransactionManager's balance should increase by the price of the NFT");
+        // end balaces
+        const endBuyerBal = BigInt((await ethers.provider.getBalance(buyer.address)).toString());
+        const endSellerBal = BigInt((await ethers.provider.getBalance(tsxMgr.target)).toString());
 
-        //await expect(transactionManager.connect(buyer).buyCrypto(1, { value: price }))
-        //.to.emit(transactionManager, "Transfer")
-        //.withArgs(transactionManager.address, buyer.address, 1);
-
-
-
-        // Verify new owner
-        //const newOwner = await mintManager.ownerOf(1);
-        //expect(newOwner).to.equal(buyer.address);
-
-        // Verify Ether transfer and balance
-        //const balanceAfter = await ethers.provider.getBalance(transactionManager.address);
-        //expect(balanceAfter).to.equal(price);
-
+        expect(endBuyerBal).to.equal(srtBuyerBal - (buyersOfferPriceForNFT + gasCost), "Buyer's balance should decrease by the price of the NFT plus gas costs");
+        expect(endSellerBal).to.equal(srtSellerBal + buyersOfferPriceForNFT, "Seller's balance should increase by the price of the NFT");
     });
+
+    it("Buyer gets its money back, when sending too few ETH", async function () {
+        const { tsxMgr, _, buyer } = await deploytsxMgrCrtFxt();
+        const mintMgrAdr = await tsxMgr.mintManager();
+        const mintMgr = await getmintMgrContract(mintMgrAdr)
+
+        const strOwnerAdr = await mintMgr.ownerOf(1);
+        expect(strOwnerAdr).to.equal(mintMgr);
+
+        const srtBuyerBal = BigInt((await ethers.provider.getBalance(buyer.address)).toString());
+        const srtSellerBal = BigInt((await ethers.provider.getBalance(tsxMgr)).toString());
+        
+        const buyersOfferPriceForNFT = ethers.parseEther("1.0"); // eth is not enough for purchase
+        await expect(tsxMgr.connect(buyer).buyCrypto(1, { value: buyersOfferPriceForNFT }))
+        .to.be.revertedWith("Sent too few weis");
+
+        const endOwnerAdr = await mintMgr.ownerOf(1);
+        expect(endOwnerAdr).to.equal(mintMgr); // owner did not change
+
+        const endBuyerBal = BigInt((await ethers.provider.getBalance(buyer.address)).toString());
+        const endSellerBal = BigInt((await ethers.provider.getBalance(tsxMgr.target)).toString());
+
+        expect(endBuyerBal).to.be.closeTo(srtBuyerBal, ethers.parseEther("0.01"));
+        expect(endSellerBal).to.equal(srtSellerBal);
+    });
+
+    // test when buyer wants to buy the same NFT twice
+    // test when buyer sends too much money
 });

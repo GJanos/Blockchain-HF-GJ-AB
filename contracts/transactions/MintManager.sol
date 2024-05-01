@@ -59,41 +59,43 @@ contract MintManager is ERC721URIStorage {
 
     function mintAllNFTs() private {
         // Red Cryptomon
-        mintCryptomonNFT(10,
+        mintCryptomonNFT(10 ether,
                         Stats(10, 3, 1),
                         Stats(2, 1, 1),
                         Stats(5, 3, 2));
 
         // White Cryptomon
-        mintCryptomonNFT(9,
+        mintCryptomonNFT(9 ether,
                         Stats(8, 4, 1),
                         Stats(1, 2, 1),
                         Stats(4, 4, 1));
 
         // Black Cryptomon
-        mintCryptomonNFT(15,
+        mintCryptomonNFT(15 ether,
                         Stats(12, 5, 2),
                         Stats(3, 2, 1),
                         Stats(10, 4, 2));
 
         // Blue Cryptomon
-        mintCryptomonNFT(7,
+        mintCryptomonNFT(7 ether,
                         Stats(8, 2, 0),
                         Stats(2, 1, 1),
                         Stats(4, 3, 1));
 
         // Green Cryptomon
-        mintCryptomonNFT(8,
+        mintCryptomonNFT(8 ether,
                         Stats(6, 2, 0),
                         Stats(5, 4, 1),
                         Stats(11, 7, 3));
     }
 
-    function transferNFTto(address to, uint256 tokenId) public {
+    function transferNFTto(address to, uint256 tokenId) public returns (address){
         // The contract itself is transferring, no need to approve since the contract is the owner and initiates the transfer
         _transfer(address(this), to, tokenId);
+        address cryptoAdr = allMintedCryptomonAddresses[tokenId];
         allMintedCryptomonAddresses[tokenId] = address(0);
         storedNFTCnt--;
+        return cryptoAdr;
     }
 
 
