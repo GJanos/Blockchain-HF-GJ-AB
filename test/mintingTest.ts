@@ -1,7 +1,6 @@
 const { expect } = require("chai");
-const {
-  loadFixture,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { ethers } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 describe("Mint Cryptomons", function () {
 
@@ -14,9 +13,6 @@ describe("Mint Cryptomons", function () {
     
     it("Should mint all initial NFTs and assign them to the contract itself", async function () {
         const { mintManager } = await loadFixture(deployMintManagerCrtFxt);
-        //const ownerOfFirst = await mintManager.allMintedCryptomonAddresses[1];
-        //const ownerOfSecond = await mintManager.allMintedCryptomonAddresses[2];
-        //const ownerOfThird = await mintManager.allMintedCryptomonAddresses[3];
 
         const ownerOfFirst = await mintManager.ownerOf(1);
         const ownerOfSecond =await mintManager.ownerOf(2);
@@ -40,35 +36,35 @@ describe("Mint Cryptomons", function () {
         const CRYPTOMONS = [
             {
                 uri: "https://ipfs.io/ipfs/QmZ17y3ju3yav3T1LqrcF9o1vct5U5J28ZWPSbSzTFAtpx",
-                price: 10,
+                price: ethers.parseEther("10.0"),
                 baseStats: { hp: 10, dmg: 3, def: 1 },
                 lvlIncStats: { hp: 2, dmg: 1, def: 1 },
                 evoIncStats: { hp: 5, dmg: 3, def: 2 }
             },
             {
                 uri: "https://ipfs.io/ipfs/QmSWuLmVkBzRWTiuqYu3f8gKKRQafuhq8fR3ZJaid1Hb34",
-                price: 9,
+                price: ethers.parseEther("9.0"),
                 baseStats: { hp: 8, dmg: 4, def: 1 },
                 lvlIncStats: { hp: 1, dmg: 2, def: 1 },
                 evoIncStats: { hp: 4, dmg: 4, def: 1 }
             },
             {
                 uri: "https://ipfs.io/ipfs/QmfF1Tv7ZytfEfm3ZrhEfwFrSnewJLwxdZ8iMF7g2rPYB6",
-                price: 15,
+                price: ethers.parseEther("15.0"),
                 baseStats: { hp: 12, dmg: 5, def: 2 },
                 lvlIncStats: { hp: 3, dmg: 2, def: 1 },
                 evoIncStats: { hp: 10, dmg: 4, def: 2 }
             },
             {
                 uri: "https://ipfs.io/ipfs/QmT6TYcaSy8taWpeKw8JbJNBXeoMbNE7MRQFxczAyDjN7Y",
-                price: 7,
+                price: ethers.parseEther("7.0"),
                 baseStats: { hp: 8, dmg: 2, def: 0 },
                 lvlIncStats: { hp: 2, dmg: 1, def: 1 },
                 evoIncStats: { hp: 4, dmg: 3, def: 1 }
             },
             {
                 uri: "https://ipfs.io/ipfs/QmPv6Xycdz4bo6f9PijKuqmJc5eJLVbdc4khgtvEaJAK1g",
-                price: 8,
+                price: ethers.parseEther("8.0"),
                 baseStats: { hp: 6, dmg: 2, def: 0 },
                 lvlIncStats: { hp: 5, dmg: 4, def: 1 },
                 evoIncStats: { hp: 11, dmg: 7, def: 3 }
@@ -114,15 +110,12 @@ describe("Mint Cryptomons", function () {
     
     it("Owner of minted Cryptomon NFT should change", async function () {
         const { mintManager, _, addr1 } = await loadFixture(deployMintManagerCrtFxt);
-
-        // Assuming the NFTs are minted to the mintManager contract itself initially
+        console.log(mintManager);
         const initialOwner = await mintManager.ownerOf(1);
         expect(initialOwner).to.equal(mintManager);
 
-        // Perform the transfer
         await mintManager.transferNFTto(addr1.address, 1);
 
-        // Check the new owner
         const newOwner = await mintManager.ownerOf(1);
         expect(newOwner).to.equal(addr1.address);
 
