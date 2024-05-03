@@ -6,7 +6,6 @@ import "hardhat/console.sol";
 
 import "../cryptomon/Cryptomon.sol";
 import "../cryptomon/ICryptoAction.sol";
-import "../cryptomon/CryptoStatAndItem.sol";
 
 contract MintManager is ERC721URIStorage {
     //had to use own counter instead of Soliditys, it got removed from 

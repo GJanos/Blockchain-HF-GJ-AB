@@ -34,8 +34,10 @@ contract TransactionManager {
     function listCryptoNFTs() public view {
         for (uint i = 0; i < mintManager.totalSupply(); i++) {
             address cryptomonAddress = mintManager.allMintedCryptomonAddresses(i);
-            console.log("NFT address: %s",cryptomonAddress);
-            Cryptomon(cryptomonAddress).print();
+            if(cryptomonAddress != address(0x0)){
+                console.log("NFT address: %s",cryptomonAddress);
+                Cryptomon(cryptomonAddress).print();
+            }
         }
     }
 }

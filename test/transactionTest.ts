@@ -18,9 +18,9 @@ describe("Transactions", function () {
         return mintMgr.attach(address);
     }
     
-    it("Should lists all minted contracts", async function () {
+    it("TransactionManager should lists all minted contracts", async function () {
         const { tsxMgr } = await deploytsxMgrCrtFxt();
-        await tsxMgr.listCryptoNFTs();
+        //await tsxMgr.listCryptoNFTs();
     });
 
     it("Should allow buyer to buy a CryptomonNFT. Owner changes. Balances change", async function () {

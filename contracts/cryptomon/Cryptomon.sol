@@ -4,7 +4,17 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
 import "./ICryptoAction.sol";
-import "./CryptoStatAndItem.sol";
+
+struct Stats {
+    uint hp;
+    uint dmg;
+    uint def;
+}
+
+struct Meta {
+    uint evoLvlCap;
+    uint lvlUpXpNeeded;
+}
 
 contract Cryptomon {
 
