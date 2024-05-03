@@ -19,6 +19,7 @@ contract Player {
         owner = msg.sender;
         tsxMgrAdr = _tsxMgrAdr;
         gameMgrAdr = _gameMgrAdr;
+        states = new PlayerStates();
     }
 
     modifier onlyOwner() {
@@ -26,16 +27,41 @@ contract Player {
         _;
     }
 
-    function battlePlayers(uint256 ownCryptoID) public {
-        // Battle logic here
+    function buyCrypto(uint256 NFTID) public payable {
+        states.handleEvent(CryptoEvent.BUY);
+        address cryptoAdr = TransactionManager(tsxMgrAdr).buyCrypto{value: msg.value}(NFTID);
+        cryptomons.push(cryptoAdr);
     }
 
+    function listCryptoNFTs() onlyOwner public {
+        states.handleEvent(CryptoEvent.BUY);
+        TransactionManager(tsxMgrAdr).listCryptoNFTs();
+    }
 
+    function battlePlayers(uint256 NFTID) onlyOwner public {
+        ownCryptoNFT(NFTID);
+        states.handleEvent(CryptoEvent.ENTERINGBATTLE);
+        GameManager(gameMgrAdr).addBattlingPlayer(NFTID);
+    }
+
+    function ownCryptoNFT(uint256 NFTID) internal view {
+        bool ownsNFT = false;
+        for (uint i = 0; i < cryptomons.length; i++) {
+            if (Cryptomon(cryptomons[i]).NFTID() == NFTID) {
+                ownsNFT = true;
+                break;
+            }
+        }
+        require(ownsNFT == true, "Player does not own the specified Cryptomon");
+    }
+
+    /*
     function battleNPC(uint256 cryptoID) public {
         // NPC battle logic here
     }
+    */
 
-    function attack(uint256 NFTID) public {
+    function attack(uint256 NFTID) onlyOwner public {
         // Attack logic here
 
         //GameManager(gameMgrAdr).attack(NFTID)
@@ -43,20 +69,19 @@ contract Player {
         // emit an attack in its stead against the other player who is in the battle
     }
 
-    function defend() public {
+    function defend() onlyOwner public {
         // Defense logic here
     }
 
-    function special() public {
+    function special() onlyOwner public {
         // Special move logic here
     }
 
-    function buyCrypto(uint256 NFTID) public payable {
-        address cryptoAdr = TransactionManager(tsxMgrAdr).buyCrypto(NFTID);
-        cryptomons.push(cryptoAdr);
+    function receiveEvent(CryptoEvent _event) public {
+        states.handleEvent(_event);
     }
 
-    function listCryptos() public view {
-        TransactionManager(tsxMgrAdr).listCryptoNFTs();
+    function pintCurrentState() public view {
+        states.pintCurrentState();
     }
 }

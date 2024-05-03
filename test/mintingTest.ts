@@ -110,7 +110,7 @@ describe("Mint Cryptomons", function () {
     
     it("Owner of minted Cryptomon NFT should change", async function () {
         const { mintManager, _, addr1 } = await loadFixture(deployMintManagerCrtFxt);
-        console.log(mintManager);
+
         const initialOwner = await mintManager.ownerOf(1);
         expect(initialOwner).to.equal(mintManager);
 
@@ -122,6 +122,4 @@ describe("Mint Cryptomons", function () {
         const storedNFT = await mintManager.storedNFTCnt();
         expect(storedNFT).to.equal(4);
     });
-
-
 });
