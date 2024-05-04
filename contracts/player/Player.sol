@@ -8,6 +8,12 @@ import "../transactions/TransactionManager.sol";
 import "../game/GameManager.sol";
 import "./PlayerStates.sol";
 
+enum PlayerAction {
+    ATTACK,
+    DEFEND,
+    SPECIAL
+}
+
 contract Player {
     address public owner;
     address public tsxMgrAdr;
@@ -39,20 +45,18 @@ contract Player {
     }
 
     function battlePlayers(uint256 NFTID) onlyOwner public {
-        ownCryptoNFT(NFTID);
+        address crypto = getCryptomonAddress(NFTID);
         states.handleEvent(CryptoEvent.ENTERINGBATTLE);
-        GameManager(gameMgrAdr).addBattlingPlayer(NFTID);
+        GameManager(gameMgrAdr).addBattlingPlayer(crypto);
     }
 
-    function ownCryptoNFT(uint256 NFTID) internal view {
-        bool ownsNFT = false;
-        for (uint i = 0; i < cryptomons.length; i++) {
+    function getCryptomonAddress(uint256 NFTID) public view returns (address) {
+        for (uint256 i = 0; i < cryptomons.length; i++) {
             if (Cryptomon(cryptomons[i]).NFTID() == NFTID) {
-                ownsNFT = true;
-                break;
+                return cryptomons[i];
             }
         }
-        require(ownsNFT == true, "Player does not own the specified Cryptomon");
+        revert("Cryptomon with the given NFTID not found");
     }
 
     /*
@@ -61,20 +65,20 @@ contract Player {
     }
     */
 
-    function attack(uint256 NFTID) onlyOwner public {
-        // Attack logic here
-
-        //GameManager(gameMgrAdr).attack(NFTID)
-        // game manager has to decide which battle playter is part of, then 
-        // emit an attack in its stead against the other player who is in the battle
+    // player already registered into a battle with a crypto, so we dont need to specify it here
+    function attack() onlyOwner public {
+        states.handleEvent(CryptoEvent.BATTLESTART);
+        GameManager(gameMgrAdr).playerAction(PlayerAction.ATTACK);
     }
 
     function defend() onlyOwner public {
-        // Defense logic here
+        states.handleEvent(CryptoEvent.BATTLESTART);
+        GameManager(gameMgrAdr).playerAction(PlayerAction.DEFEND);
     }
 
     function special() onlyOwner public {
-        // Special move logic here
+        states.handleEvent(CryptoEvent.BATTLESTART);
+        GameManager(gameMgrAdr).playerAction(PlayerAction.SPECIAL);
     }
 
     function receiveEvent(CryptoEvent _event) public {

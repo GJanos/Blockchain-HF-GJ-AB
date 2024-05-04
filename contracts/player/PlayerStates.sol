@@ -55,7 +55,8 @@ contract PlayerStates {
     }
 
     function handleBattleStart(CryptoEvent _event) private {
-        require(currentState == State.WAITINGFORBATTLE, "Already in a battle");
+        require(currentState == State.WAITINGFORBATTLE ||
+                currentState == State.BATTLING, "Already in a battle");
         currentState = State.BATTLING;
     }
 
