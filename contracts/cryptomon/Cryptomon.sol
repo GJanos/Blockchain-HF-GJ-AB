@@ -14,6 +14,8 @@ struct Stats {
 struct Meta {
     uint evoLvlCap;
     uint lvlUpXpNeeded;
+    uint battleWinXp;
+    uint battleLoseXp;
 }
 
 contract Cryptomon {
@@ -22,9 +24,10 @@ contract Cryptomon {
     string public NFTURI;
     uint256 public price;
     uint public lvl = 1;
+    uint public xp = 0;
 
     ICryptoActions private actionStrategy;
-    Meta private metaData = Meta(3, 10);
+    Meta private metaData = Meta(3, 10, 5, 2);
 
     Stats public baseStats;
     Stats public combatStats;
@@ -57,7 +60,19 @@ contract Cryptomon {
     }
 
     function isDead() external view returns (bool) {
-        return combatStats.hp <= 0;
+        return combatStats.hp == 0;
+    }
+
+    function gainXp(bool winner) public {
+        uint _xp = winner ? metaData.battleWinXp : metaData.battleLoseXp;
+        xp += _xp;
+        if (xp >= metaData.lvlUpXpNeeded) {
+            lvlUp();
+            xp = xp - metaData.lvlUpXpNeeded;
+            if (lvl == metaData.evoLvlCap) {
+                evolve();
+            }
+        }
     }
 
     function lvlUp() public {
@@ -71,7 +86,6 @@ contract Cryptomon {
     }
 
     function evolve() public {
-        lvl++;
         actionStrategy = new EvolvedActions();
         evolved = true;
         baseStats.hp += evoIncStats.hp;
@@ -98,7 +112,7 @@ contract Cryptomon {
         combatStats = baseStats;
     }
 
-    function setCombatHp(uint256 newHp) public {
+    function setCombatHp(uint newHp) public {
         combatStats.hp = newHp;
     }
 
@@ -122,6 +136,10 @@ contract Cryptomon {
         return combatStats.def;
     }
 
+    function setLvlUpXpNeeded(uint _xp) public {
+        metaData.lvlUpXpNeeded = _xp;
+    }
+
     function print() public view {
         console.log("Cryptomon NFTID: %s", NFTID);
         console.log("NFTURI: %s", NFTURI);
@@ -131,6 +149,12 @@ contract Cryptomon {
         console.log("Base Stats - HP: %s, DMG: %s, DEF: %s", baseStats.hp, baseStats.dmg, baseStats.def);
         console.log("Level Increment Stats - HP: %s, DMG: %s, DEF: %s", lvlIncStats.hp, lvlIncStats.dmg, lvlIncStats.def);
         console.log("Evolution Stats - HP: %s, DMG: %s, DEF: %s", evoIncStats.hp, evoIncStats.dmg, evoIncStats.def);
+        console.log("Combat Stats - HP: %s, DMG: %s, DEF: %s", combatStats.hp, combatStats.dmg, combatStats.def);
+        console.log("Item Stats - HP: %s, DMG: %s, DEF: %s", item.hp, item.dmg, item.def);
+    }
+
+    function printBattleStats() public view {
+        console.log("Cryptomon NFTID: %s", NFTID);
         console.log("Combat Stats - HP: %s, DMG: %s, DEF: %s", combatStats.hp, combatStats.dmg, combatStats.def);
         console.log("Item Stats - HP: %s, DMG: %s, DEF: %s", item.hp, item.dmg, item.def);
     }

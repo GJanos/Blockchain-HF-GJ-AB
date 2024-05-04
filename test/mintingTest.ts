@@ -58,7 +58,7 @@ describe("Mint Cryptomons", function () {
             {
                 uri: "https://ipfs.io/ipfs/QmT6TYcaSy8taWpeKw8JbJNBXeoMbNE7MRQFxczAyDjN7Y",
                 price: ethers.parseEther("7.0"),
-                baseStats: { hp: 8, dmg: 2, def: 0 },
+                baseStats: { hp: 8, dmg: 3, def: 0 },
                 lvlIncStats: { hp: 2, dmg: 1, def: 1 },
                 evoIncStats: { hp: 4, dmg: 3, def: 1 }
             },

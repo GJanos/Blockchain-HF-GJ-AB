@@ -4,69 +4,70 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
 import "./Battle.sol";
+import "./IBattleStrategy.sol";
 import "../player/Player.sol";
 import "../player/PlayerStates.sol";
 
 
 contract GameManager {
 
+    struct SearchResult{
+        uint8 whichPlayer;
+        Battle battle;
+    }
+
     PlayersForBattle[] public battleQueue;
     Battle[] public activeBattles;
 
     constructor() {
-
     }
 
-    // Function to add a player to the battle queue
-    function addBattlingPlayer(uint256 NFTID) public {
-        address player1Adr = msg.sender;
+    function addBattlingPlayer(address crypto) public {
+        address secondPlayerAdr = msg.sender;
 
         if (battleQueue.length == 1) {
-            address player2Adr = battleQueue[0].adr;
+            address firstPlayerAdr = battleQueue[0].adr;
 
-            PlayersForBattle memory player1 = PlayersForBattle(player1Adr, NFTID);
-            PlayersForBattle memory player2 = PlayersForBattle(player2Adr, battleQueue[0].NFTID);
-
-            Battle battle = new Battle(player1, player2);
+            PlayersForBattle memory secondPlayer = PlayersForBattle(secondPlayerAdr, crypto);
+            PlayersForBattle memory firstPlayer = PlayersForBattle(firstPlayerAdr, battleQueue[0].crypto);
+            
+            Battle battle = new Battle(firstPlayer, secondPlayer, new TwoPlayerBattleStrategy());
             activeBattles.push(battle);
 
-            Player(player1Adr).receiveEvent(CryptoEvent.BATTLESTART);
-            Player(player2Adr).receiveEvent(CryptoEvent.BATTLESTART);
-
+            Player(firstPlayerAdr).receiveEvent(CryptoEvent.BATTLESTART);
+            Player(secondPlayerAdr).receiveEvent(CryptoEvent.BATTLESTART);
+            
             battleQueue.pop();
 
         } else {
-            battleQueue.push(PlayersForBattle(player1Adr, NFTID));
+            battleQueue.push(PlayersForBattle(secondPlayerAdr, crypto));
         }
     }
-    
 
-    // Function to simulate a battle between two players
-    function battle2Players(address player1, uint NFTID1, address player2, uint NFTID2) internal {
-        // Battle logic goes here
+    function playerAction(PlayerAction _action) public {
+        SearchResult memory result = findPlayersBattle(msg.sender);
+
+        result.battle.handleEvent(result.whichPlayer == 1
+        ? BattleEvent.PLAYER1ACTION : BattleEvent.PLAYER2ACTION);
+
+        result.battle.playerAction(_action);
+    }
+
+    function findPlayersBattle(address player) public view returns (SearchResult memory) {
+        for (uint i = 0; i < activeBattles.length; i++) {
+            if (activeBattles[i].getPlayer1Address() == player) {
+                return SearchResult(1, activeBattles[i]);
+            }else if(activeBattles[i].getPlayer2Address() == player) {
+                return SearchResult(2, activeBattles[i]);
+            }
+        }
+        revert("Player must be inside a battle");
     }
     /*
-
     // Simulated battle with an NPC
     function battleNPC(address _addr, uint _cryptoID) public {
         // NPC battle logic goes here
         emit BattleStarted(_addr, address(0), _cryptoID, 0);
-    }
-
-    // Player actions during the battle
-    function playerAttack(uint _NFTID) public {
-        require(players[msg.sender].isBattling, "You are not currently in a battle.");
-        emit PlayerAction(msg.sender, "attack");
-    }
-
-    function playerDefend(uint _NFTID) public {
-        require(players[msg.sender].isBattling, "You are not currently in a battle.");
-        emit PlayerAction(msg.sender, "defend");
-    }
-
-    function playerSpecial(uint _NFTID) public {
-        require(players[msg.sender].isBattling, "You are not currently in a battle.");
-        emit PlayerAction(msg.sender, "special");
     }
     */
 

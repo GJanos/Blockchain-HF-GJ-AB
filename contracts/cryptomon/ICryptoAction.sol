@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
+
 import "./Cryptomon.sol";
 
 interface ICryptoActions {
@@ -15,8 +17,12 @@ contract NormalActions is ICryptoActions {
         uint256 defenderHp = otherCrypto.getCombatHp();
         uint256 attackerDmg = crypto.getCombatDmg();
         uint256 defenderDef = otherCrypto.getCombatDef();
-
-        otherCrypto.setCombatHp(defenderHp - (attackerDmg - defenderDef));
+        
+        if(attackerDmg > defenderDef){
+            // needed because of uints
+            otherCrypto.setCombatHp(defenderHp < (attackerDmg - defenderDef)
+            ? 0 : (defenderHp - (attackerDmg - defenderDef)));
+        }
     }
 
     function defend(Cryptomon crypto) external override {
@@ -27,6 +33,8 @@ contract NormalActions is ICryptoActions {
     function special(Cryptomon crypto, Cryptomon otherCrypto) external override {
         // If normal Crytomon does special attack, it just wasted a turn
     }
+
+
 }
 
 // Contract representing evolved actions a Cryptomon can take
@@ -36,7 +44,16 @@ contract EvolvedActions is ICryptoActions {
         uint256 attackerDmg = crypto.getCombatDmg();
         uint256 defenderDef = otherCrypto.getCombatDef();
 
-        otherCrypto.setCombatHp(defenderHp - (attackerDmg + 1 - defenderDef));
+        uint256 additionalEvoDmg = 1;
+
+        if(attackerDmg + additionalEvoDmg > defenderDef){
+            // needed because of uints
+            otherCrypto.setCombatHp(defenderHp < 
+            (attackerDmg + additionalEvoDmg - defenderDef) ?
+            0 :
+            (defenderHp - (attackerDmg + additionalEvoDmg - defenderDef)));
+        }
+        
     }
 
     function defend(Cryptomon crypto) external override {
@@ -55,6 +72,10 @@ contract EvolvedActions is ICryptoActions {
         uint256 attackerDmg = crypto.getCombatDmg();
         uint256 defenderDef = otherCrypto.getCombatDef();
 
-        otherCrypto.setCombatHp(defenderHp - (attackerDmg + 1 - defenderDef));
+        if(attackerDmg > defenderDef){
+            // needed because of uints
+            otherCrypto.setCombatHp(defenderHp < (attackerDmg - defenderDef)
+            ? 0 : (defenderHp - (attackerDmg - defenderDef)));
+        }
     }
 }

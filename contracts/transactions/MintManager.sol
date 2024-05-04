@@ -77,7 +77,7 @@ contract MintManager is ERC721URIStorage {
 
         // Blue Cryptomon
         mintCryptomonNFT(7 ether,
-                        Stats(8, 2, 0),
+                        Stats(8, 3, 0),
                         Stats(2, 1, 1),
                         Stats(4, 3, 1));
 
