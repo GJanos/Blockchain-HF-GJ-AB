@@ -15,7 +15,7 @@
     "url": "https://github.com/GJanos/Blockchain-HF-GJ-AB/issues"
   },
   "homepage": "https://github.com/GJanos/Blockchain-HF-GJ-AB#readme",
-  "description": "",
+  "description": "This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
@@ -26,5 +26,9 @@
     "dotenv": "^16.4.5",
     "form-data": "^4.0.0",
     "fs": "^0.0.1-security"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": []
 }
