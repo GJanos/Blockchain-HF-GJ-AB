@@ -1,13 +1,8 @@
-# Sample Hardhat Project
+# Cryptomon turn based NFT battler game!
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+## Instructions for bootstrapping the project:
+### After cloning the repo:
+git clone https://github.com/GJanos/Blockchain-HF-GJ-AB.git && cd Blockchain-HF-GJ-AB/
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
-```
+### execute these:
+npm init -y && npm install && npx hardhat test
