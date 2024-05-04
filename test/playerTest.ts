@@ -22,9 +22,9 @@ describe("Player interactions", function () {
         return crypto.attach(address);
     }
 
-    async function playerBuysNFT(player, tsxMgr, NFTID: number, price: number) :Promise<any> {
-        // player starts the transaction with the right amount of eth
-        const buyersOfferPriceForNFT = ethers.parseEther(`${price}`); // eth is not enough for purchase
+    async function playerBuysNFT(player, tsxMgr, NFTID: number, price: number) {
+
+        const buyersOfferPriceForNFT = ethers.parseEther(`${price}`);
         await player.buyCrypto(NFTID, { value: buyersOfferPriceForNFT });
 
         const mintMgrAdr = await tsxMgr.mintManager();
@@ -184,7 +184,7 @@ describe("Player interactions", function () {
         await expect(await player2Crypto.getCombatHp()).to.be.equal(3);
 
         // player1 attacks again, but it is not his turn
-        await expect(player.attack()).to.be.revertedWith("Not player 1-s turn");
+        await expect(player.attack()).to.be.revertedWith("Not player 1's turn");
         
         // player2 attacks
         await player2Ctr.attack();
@@ -194,7 +194,7 @@ describe("Player interactions", function () {
         await expect(await player2Crypto.getCombatHp()).to.be.equal(3);
 
         // player2 attacks again, but it is not his turn
-        await expect(player2Ctr.attack()).to.be.revertedWith("Not player 2-s turn");
+        await expect(player2Ctr.attack()).to.be.revertedWith("Not player 2's turn");
 
         // player1 defends
         await player.defend();

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
@@ -63,13 +63,6 @@ contract GameManager {
         }
         revert("Player must be inside a battle");
     }
-    /*
-    // Simulated battle with an NPC
-    function battleNPC(address _addr, uint _cryptoID) public {
-        // NPC battle logic goes here
-        emit BattleStarted(_addr, address(0), _cryptoID, 0);
-    }
-    */
 
     function getBattleQueueLength() public view returns (uint) {
         return battleQueue.length;

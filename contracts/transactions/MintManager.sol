@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -6,6 +6,11 @@ import "hardhat/console.sol";
 
 import "../cryptomon/Cryptomon.sol";
 import "../cryptomon/ICryptoAction.sol";
+
+/**
+ * @title MintManager
+ * @dev A contract for managing the minting and transfer of Cryptomon NFTs.
+ */
 
 contract MintManager is ERC721URIStorage {
     //had to use own counter instead of Soliditys, it got removed from 
